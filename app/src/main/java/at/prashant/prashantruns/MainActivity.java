@@ -71,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
         File f = new File(android.os.Environment.getExternalStorageDirectory(), "tmp.jpg");
 
         tempImgUri = Uri.fromFile(f);
-        tempImgUri = FileProvider.getUriForFile(this,"at.prashant.prashantruns",f);
 
         Log.d("URI is ", tempImgUri.toString());
 
