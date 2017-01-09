@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int CAMERA_REQUEST_CODE = 0;
     private Uri tempImgUri;              // Store the URI of the cropped image
-    private Uri imageUri;                // Used to bundle it when the screen is rotated
     private ImageView imageView;         // Store the imageView displaying the cropped image
     SharedPreferences sharedPreferences; // Store the values on saving
     /*
@@ -84,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
     /*
      * Credit : http://stackoverflow.com/questions/1819142/how-should-i-validate-an-e-mail-address#7882950
      */
-    public boolean validateEmail(CharSequence target)
+    private boolean validateEmail(CharSequence target)
     {
         if (TextUtils.isEmpty(target))
             return false;
@@ -92,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
             return android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
     }
 
-    public boolean validateClass(String year)
+    private boolean validateClass(String year)
     {
         if(year.length() != 4)
             return false;
@@ -102,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
     /*
      * Credit : http://stackoverflow.com/questions/6358380/phone-number-validation-android#6359128
      */
-    public boolean validateCellPhone(String number)
+    private boolean validateCellPhone(String number)
     {
         return android.util.Patterns.PHONE.matcher(number).matches();
     }
@@ -110,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
     /*
      * Helper to save profile to sharedPreferences when save is clicked.
      */
-    public void saveProfile()
+    private void saveProfile()
     {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(NAME, ((EditText) findViewById(R.id.editText1)).getText().toString());
@@ -119,7 +118,8 @@ public class MainActivity extends AppCompatActivity {
         editor.putString(CLASS, ((EditText) findViewById(R.id.editText4)).getText().toString());
         editor.putString(MAJOR, ((EditText) findViewById(R.id.editText6)).getText().toString());
         editor.putInt(GENDER, ((RadioGroup) findViewById(R.id.radioGroup)).getCheckedRadioButtonId());
-        editor.putString(IMAGE_URI, tempImgUri.toString());
+        if(tempImgUri != null)
+            editor.putString(IMAGE_URI, tempImgUri.toString());
         editor.commit();
     }
 
@@ -127,12 +127,13 @@ public class MainActivity extends AppCompatActivity {
      * Method loads values from shared preferences.
      * Called from onCreate()
      */
-    public void loadProfile()
+    private void loadProfile()
     {
         if(sharedPreferences!=null)
         {
             String uriString = sharedPreferences.getString(IMAGE_URI, null);
-            if(uriString!=null) {
+            if(uriString!=null)
+            {
                 tempImgUri = Uri.parse(uriString);
                 imageView.setImageURI(tempImgUri);
             }
@@ -157,41 +158,41 @@ public class MainActivity extends AppCompatActivity {
         EditText classEdit = (EditText) findViewById(R.id.editText4);
         EditText majorEdit = (EditText) findViewById(R.id.editText6);
         RadioGroup gender = (RadioGroup) findViewById(R.id.radioGroup);
+
         // Validation of forms starts
-        String logger = String.valueOf(gender.getCheckedRadioButtonId());
-        Log.d("Gender", logger);
         if(TextUtils.isEmpty(nameEdit.getText().toString()))
         {
             nameEdit.setError("Cannot be empty");
             invalid = true;
         }
-        else if(gender.getCheckedRadioButtonId() == 0)
+        if(gender.getCheckedRadioButtonId() == 0)
         {
             TextView textView = (TextView) findViewById(R.id.textView5);
             textView.setTextColor(Color.RED);
             textView.setText("Gender -- Please select");
             invalid = true;
         }
-        else if(validateEmail(emailEdit.getText().toString()) == false)
+        if(validateEmail(emailEdit.getText().toString()) == false)
         {
             emailEdit.setError("Email is not valid");
             invalid = true;
         }
-        else if(validateCellPhone(phoneEdit.getText().toString()) == false)
+        if(validateCellPhone(phoneEdit.getText().toString()) == false)
         {
             phoneEdit.setError("Cell phone number not valid");
             invalid = true;
         }
-        else if(TextUtils.isEmpty(majorEdit.getText().toString()))
+        if(TextUtils.isEmpty(majorEdit.getText().toString()))
         {
             majorEdit.setError("Major cannot be empty");
             invalid = true;
         }
-        else if(validateClass(classEdit.getText().toString()) == false)
+        if(validateClass(classEdit.getText().toString()) == false)
         {
             classEdit.setError("Class not valid");
             invalid = true;
         }
+        // End of validation
         if(invalid == false)
         {
             saveProfile();
@@ -233,10 +234,8 @@ public class MainActivity extends AppCompatActivity {
         ContentValues values = new ContentValues(1);
         values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
         tempImgUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-        //Log.d("URI is ", tempImgUri.toString());
         intent.putExtra(MediaStore.EXTRA_OUTPUT, tempImgUri);
         intent.putExtra("return-data", true);
-        //Log.d("Tag", tempImgUri.toString());
         startActivityForResult(intent, CAMERA_REQUEST_CODE);
     }
 
@@ -266,10 +265,12 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("URI", tempImgUri.toString());
                 */
 
+
                 Crop.of(tempImgUri, tempImgUri).asSquare().start(this);
             }
-            catch (Exception e) {
-                // What goes here?
+            catch (Exception e)
+            {
+                e.printStackTrace();
             }
         }
         else if (requestCode == Crop.REQUEST_CROP)
@@ -301,9 +302,6 @@ public class MainActivity extends AppCompatActivity {
         {
             tempImgUri = savedInstanceState.getParcelable(URIKEY); // if the screen was rotated, get it from the bundle.
             imageView.setImageURI(tempImgUri);
-
         }
-        //Log.d("ABCD", Environment.getExternalStorageDirectory().toString());
-        //Log.d("URL","Permissions");
     }
 }
