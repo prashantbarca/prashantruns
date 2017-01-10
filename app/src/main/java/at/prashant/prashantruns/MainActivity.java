@@ -15,6 +15,8 @@ import android.os.Environment;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -51,12 +53,15 @@ public class MainActivity extends AppCompatActivity {
      * 1. App pushed to background
      * 2. Auto-rotation
      * 3. Form validation
+     * 4. Permissions not granted
      */
 
     public static final int CAMERA_REQUEST_CODE = 0;
-    private Uri tempImgUri;              // Store the URI of the cropped image
-    private ImageView imageView;         // Store the imageView displaying the cropped image
-    SharedPreferences sharedPreferences; // Store the values on saving
+    private Uri tempImgUri;                           // Store the URI of the cropped image
+    private ImageView imageView;                      // Store the imageView displaying the cropped image
+    SharedPreferences sharedPreferences;              // Store the values on saving
+    public static final int PERMISSIONS_GRANTED = 10; // In case permissions were not granted, should check this variable.
+    boolean cameraPermitted;                          // In case camera was not permitted, disable the snapItUp button.
     /*
      * Set of keys for SharedPreferences
      */
@@ -76,9 +81,7 @@ public class MainActivity extends AppCompatActivity {
      * Called from onSave()
      */
 
-    /*
-     * Following methods are to validate input
-     */
+    /* Following methods are to validate input ------------------- */
 
     /*
      * Credit : http://stackoverflow.com/questions/1819142/how-should-i-validate-an-e-mail-address#7882950
@@ -105,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
     {
         return android.util.Patterns.PHONE.matcher(number).matches();
     }
+    /* Form validation helpers end ------------------- */
 
     /*
      * Helper to save profile to sharedPreferences when save is clicked.
@@ -146,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /* Handling the two buttons ------------------------------ */
     /*
      * Called when the save button is clicked.
      */
@@ -209,50 +214,100 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
+
+    /* End of Handling the two buttons ------------------------------ */
+
+
+    /* Permissions ------------------------------ */
     /*
-     * Permission checking method taken from sample code (Author -- XD)
+     * Permission checking method inspired from -- https://developer.android.com/training/permissions/requesting.html
      */
     private void checkPermissions()
     {
-        if (Build.VERSION.SDK_INT < 23)
+        /*
+        Log.d("Permission1", String.valueOf(PackageManager.PERMISSION_GRANTED));
+        Log.d("Permission2", String.valueOf(Manifest.permission.WRITE_EXTERNAL_STORAGE));
+        Log.d("Permission3", String.valueOf(Manifest.permission.CAMERA));
+        Log.d("Permission4", String.valueOf(Manifest.permission.READ_EXTERNAL_STORAGE));
+         */
+
+        if (Build.VERSION.SDK_INT < 23)   // This is API 25. Below 23 its not required to ask for these permissions.
             return;
 
-        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                || checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
-                || checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-        {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
-        }
+        /*
+         * PackageManager keeps record of permissions that were granted.
+         * Next time you use the app, the app won't ask for permissions again.
+         */
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+                /* Long if condition, but there is only one line action */
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSIONS_GRANTED);
     }
 
     /*
+    Inspired from https://developer.android.com/training/permissions/requesting.html
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[],
+                                           int[] grantResults)
+    {
+        for(int i = 0; i<grantResults.length;i++)
+        {
+            if(grantResults[i] != PackageManager.PERMISSION_GRANTED)
+            {
+                cameraPermitted = false;
+                break;
+            }
+            cameraPermitted = true;
+        }
+    }
+    /* End of permission handling ------------------------------ */
+
+    /*
      * Called when someone wants to take a picture.
+     * Inspired from work by Xing-dong Yang.
      */
     public void onPictureClick(View v)
     {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        ContentValues values = new ContentValues(1);
-        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
-        tempImgUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, tempImgUri);
-        intent.putExtra("return-data", true);
-        startActivityForResult(intent, CAMERA_REQUEST_CODE);
+        if(cameraPermitted) {  /* This variable is set to true if the permissions for the use of camera and disk space was granted */
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            /*
+            * Since URI.fromFile won't work, I had to go through Camera2.zip to understand how this is done!
+            */
+            ContentValues contentValues = new ContentValues(1);
+            contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
+            tempImgUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+            /* It is my belief, that this writes to the file and I don't need to bitmap write stuff */
+            /* On searching, found the file in Pictures folder along with other pictures I had taken from MyRuns */
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, tempImgUri);
+            /* Or do I? */
+            intent.putExtra("return-data", true);
+            startActivityForResult(intent, CAMERA_REQUEST_CODE);
+        }
+        else /* Let the user know they can use everything but the camera function of the app */
+        {
+            Toast.makeText(MainActivity.this, "Camera isn't permitted", Toast.LENGTH_SHORT).show();
+        }
     }
 
+    /* Handling picture ------------------------------ */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        if(resultCode == RESULT_CANCELED)
+        if(resultCode == RESULT_CANCELED) // In case the user pressed cancel.
         {
             return;
         }
-        if (requestCode == CAMERA_REQUEST_CODE)
+        if (requestCode == CAMERA_REQUEST_CODE) // User wants to crop the image.
         {
             try {
 
                 /*
                 * This logic was converting the data into bitmap and then cropping it.
                 * It worked, but not ideal. Since resolution was at stake.
+                *
                 Bitmap bitmap = (Bitmap) data.getExtras().get("data");
                 File f = new File(tempImgUri.getPath());
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -268,20 +323,22 @@ public class MainActivity extends AppCompatActivity {
 
                 Crop.of(tempImgUri, tempImgUri).asSquare().start(this);
             }
-            catch (Exception e)
+            catch (Exception e) /* I have 0 clue when what will need to be caught, just following the guidelines here */
             {
                 e.printStackTrace();
             }
         }
-        else if (requestCode == Crop.REQUEST_CROP)
+        else if (requestCode == Crop.REQUEST_CROP) // User clicked done.
         {
             tempImgUri = Crop.getOutput(data);
-            imageView.setImageURI(tempImgUri);
+            imageView.setImageURI(tempImgUri);     // Set the image uri in the MainActivity.
         }
     }
+    /* End of handling picture ------------------------------ */
 
     /*
      * Called when the state changes (rotated, pushed to background, etc.)
+     * (Livecoded with professor in class)
      */
     protected void onSaveInstanceState(Bundle outState)
     {
@@ -294,14 +351,14 @@ public class MainActivity extends AppCompatActivity {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        checkPermissions();
-        imageView = (ImageView) findViewById(R.id.imageView);
-        sharedPreferences = getSharedPreferences("PrashantRuns", Context.MODE_PRIVATE);
-        loadProfile();
-        if(savedInstanceState !=null)
+        checkPermissions();                                                             // Ask for camera and disk permissions.
+        imageView = (ImageView) findViewById(R.id.imageView);                           // Blank imageView area, Will set Uri for this when available.
+        sharedPreferences = getSharedPreferences("PrashantRuns", Context.MODE_PRIVATE); // Can return null. I handle it when assigning.
+        loadProfile();                                                                  // In case sharedPreference is there, transfer all the values to form.
+        if(savedInstanceState !=null)                                                   // In case screen was rotated, and values were saved to savedInstanceState.
         {
-            tempImgUri = savedInstanceState.getParcelable(URIKEY); // if the screen was rotated, get it from the bundle.
-            imageView.setImageURI(tempImgUri);
+            tempImgUri = savedInstanceState.getParcelable(URIKEY);                      // if the screen was rotated, get it from the bundle.
+            imageView.setImageURI(tempImgUri);                                          // Will overwrite the uri set by sharedPreference.
         }
     }
 }
