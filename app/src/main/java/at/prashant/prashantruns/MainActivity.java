@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -12,12 +13,14 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -31,6 +34,7 @@ import android.widget.EditText;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -62,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;              // Store the values on saving
     public static final int PERMISSIONS_GRANTED = 10; // In case permissions were not granted, should check this variable.
     boolean cameraPermitted;                          // In case camera was not permitted, disable the snapItUp button.
+    public static final int GALLERY_REQUEST = 11;     // If the user wants to take picture from gallery.
     /*
      * Set of keys for SharedPreferences
      */
@@ -240,7 +245,8 @@ public class MainActivity extends AppCompatActivity {
          */
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                )
                 /* Long if condition, but there is only one line action */
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSIONS_GRANTED);
     }
@@ -269,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
      * Called when someone wants to take a picture.
      * Inspired from work by Xing-dong Yang.
      */
-    public void onPictureClick(View v)
+    private void openCamera()
     {
         if(cameraPermitted) {  /* This variable is set to true if the permissions for the use of camera and disk space was granted */
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -291,11 +297,54 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this, "Camera isn't permitted", Toast.LENGTH_SHORT).show();
         }
     }
+    private void openGallery()
+    {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            /*
+            * Since URI.fromFile won't work, I had to go through Camera2.zip to understand how this is done!
+            */
+        ContentValues contentValues = new ContentValues(1);
+        contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
+        tempImgUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+            /* It is my belief, that this writes to the file and I don't need to bitmap write stuff */
+            /* On searching, found the file in Pictures folder along with other pictures I had taken from MyRuns */
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, tempImgUri);
+            /* Or do I? */
+        intent.putExtra("return-data", true);
+        intent.setType("image/*");
+        startActivityForResult(Intent.createChooser(intent, "Select File"), GALLERY_REQUEST);
+        /*
+        if (galleryIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(Intent.createChooser(galleryIntent, "Select File"), RESULT_CODE);
+         */
+    }
+    public void onPictureClick(View v)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        final CharSequence sequence[] = {"Open Camera", "Select from Gallery"};
+        builder.setTitle("Pick Profile Picture");
+        builder.setItems(sequence, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if(sequence[which] == "Open Camera")
+                {
+                    openCamera();
+                }
+                else
+                {
+                    openGallery();
+                }
+            }
+        });
+        builder.show();
+    }
 
     /* Handling picture ------------------------------ */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
+
+        ParcelFileDescriptor mInputPFD;
         if(resultCode == RESULT_CANCELED) // In case the user pressed cancel.
         {
             return;
@@ -319,18 +368,24 @@ public class MainActivity extends AppCompatActivity {
                 fos.close();
                 Log.d("URI", tempImgUri.toString());
                 */
-
-
-                Crop.of(tempImgUri, tempImgUri).asSquare().start(this);
+             Crop.of(tempImgUri, tempImgUri).asSquare().start(this);
             }
             catch (Exception e) /* I have 0 clue when what will need to be caught, just following the guidelines here */
             {
                 e.printStackTrace();
             }
         }
+
+        else if(requestCode == GALLERY_REQUEST)
+        {
+            tempImgUri = data.getData();
+            Uri destination = Uri.fromFile(new File(getCacheDir(), "cropped"));
+            Crop.of(tempImgUri, destination).asSquare().start(this);
+        }
         else if (requestCode == Crop.REQUEST_CROP) // User clicked done.
         {
             tempImgUri = Crop.getOutput(data);
+            imageView.setImageResource(0);
             imageView.setImageURI(tempImgUri);     // Set the image uri in the MainActivity.
         }
     }
