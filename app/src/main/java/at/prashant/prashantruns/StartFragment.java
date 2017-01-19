@@ -16,8 +16,9 @@ import android.widget.Spinner;
  */
 
 public class StartFragment extends Fragment {
-
-
+    /*
+     * If the Manual entry option was selected, we show different Activities.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_start,container, false);
@@ -43,7 +44,6 @@ public class StartFragment extends Fragment {
             }
         }
         );
-
         return view;
     }
 }

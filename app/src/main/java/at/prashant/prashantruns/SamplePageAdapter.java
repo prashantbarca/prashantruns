@@ -18,17 +18,25 @@ public class SamplePageAdapter extends FragmentPagerAdapter {
         this.fragments = fragments;
     }
 
+    /*
+     * Get the fragment
+     */
     @Override
     public Fragment getItem(int position) {
         return fragments.get(position);
     }
 
-
+    /*
+     * To know how many tabs are there
+     */
     @Override
     public int getCount() {
         return fragments.size();
     }
 
+    /*
+     * Method gets the title of the tabs
+     */
     public String getPageTitle(int code)
     {
         if(code == 0)

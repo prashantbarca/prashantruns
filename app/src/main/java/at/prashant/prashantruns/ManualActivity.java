@@ -35,6 +35,12 @@ https://developer.android.com/guide/topics/ui/layout/listview.html
 public class ManualActivity extends ListActivity implements AdapterView.OnItemClickListener
 {
     static final String[] manual_strings = {"Date", "Time", "Duration", "Distance", "Calories", "Heart Rate", "Comment"};
+
+    /* On create
+     * Set the content view
+     * It looks for R.id.list then.
+     * Initialise an adapter, and set it to listAdapter.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,16 +52,24 @@ public class ManualActivity extends ListActivity implements AdapterView.OnItemCl
         listView = getListView();
         listView.setOnItemClickListener(this);
     }
+
+    /* Cancel button */
     public void onCancel1(View v)
     {
         Toast.makeText(this, "Entry Discarded!", Toast.LENGTH_SHORT).show();
         finish();
     }
+
+    /* Save button */
     public void onSave1(View v)
     {
         finish();
     }
 
+    /*
+     * Has all cases to handle all the listview items depending on the list item.
+     * Each has a positive and negative button that do nothing as of now.
+     */
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Log.d("Clicked", String.valueOf(position));

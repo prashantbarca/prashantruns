@@ -22,26 +22,25 @@ public class StartActivity extends AppCompatActivity {
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
 
-
+        // Inspired for XD's sample code.
         ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
         viewPager.setOnPageChangeListener(
                 new ViewPager.SimpleOnPageChangeListener() {
                     @Override
                     public void onPageSelected(int position) {
-                        // When swiping between pages, select the
-                        // corresponding tab.
                         getActionBar().setSelectedNavigationItem(position);
                     }
                 });
 
         SlidingTabLayout slidingTabLayout = (SlidingTabLayout) findViewById(R.id.sliding_tabs);
 
+        // Add all the fragments
         fragments.add(new StartFragment());
         fragments.add(new HistoryFragment());
         fragments.add(new SettingsFragment());
 
         viewPager.setAdapter(new SamplePageAdapter(this.getFragmentManager(), fragments));
-        slidingTabLayout.setDistributeEvenly(true);
+        slidingTabLayout.setDistributeEvenly(true); // Method in SlidingTabLayout file.
         slidingTabLayout.setViewPager(viewPager);
     }
 

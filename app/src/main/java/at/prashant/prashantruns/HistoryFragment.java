@@ -10,6 +10,9 @@ import android.view.ViewGroup;
  * Created by prashant on 1/17/17.
  */
 
+/*
+ * Boilerplate -- does nothing
+ */
 public class HistoryFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_history,container, false);
