@@ -244,6 +244,10 @@ public class MainActivity extends AppCompatActivity {
                 )
                 /* Long if condition, but there is only one line action */
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSIONS_GRANTED);
+        else
+        {
+            cameraPermitted = true;
+        }
     }
 
     /*
