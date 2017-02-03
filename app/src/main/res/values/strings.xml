@@ -9,4 +9,5 @@
     <string name="inline_preferences">ABCD</string>
     <string name="title_checkbox_preference">DEFG</string>
     <string name="summary_checkbox_preference">DEFG</string>
+    <string name="title_activity_display">DisplayActivity</string>
 </resources>

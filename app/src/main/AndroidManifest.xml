@@ -41,7 +41,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".MapActivity" />
-        <activity android:name=".ManualActivity"></activity>
+        <activity android:name=".ManualActivity" />
+        <activity
+            android:name=".Display"
+            android:windowSoftInputMode="stateAlwaysHidden" />
     </application>
 
 </manifest>

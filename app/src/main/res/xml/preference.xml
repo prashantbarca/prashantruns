@@ -20,9 +20,10 @@
 
 
         <ListPreference android:title="Unit Preference"
+            android:key="unit_key"
             android:summary="Select the units"
             android:entries="@array/entries_unit_preference"
-            android:entryValues="@array/entries_unit_preference"
+            android:entryValues="@array/entryvalues_unit_preference"
             android:dialogTitle="Unit Preference"/>
 
         <EditTextPreference android:title="Comments"

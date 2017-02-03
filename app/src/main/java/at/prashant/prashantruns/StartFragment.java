@@ -24,6 +24,7 @@ public class StartFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_start,container, false);
         Button button_start = (Button) view.findViewById(R.id.button_start);
         final Spinner spinner = (Spinner) view.findViewById(R.id.input_spinner);
+        final Spinner spinner1 = (Spinner) view.findViewById(R.id.activity_spinner);
         button_start.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -31,13 +32,13 @@ public class StartFragment extends Fragment {
             {
                 if(String.valueOf(spinner.getSelectedItem()).equals("Manual Entry"))
                 {
-                    Log.d("Selected1", String.valueOf(spinner.getSelectedItem()));
                     Intent intent = new Intent(getActivity().getBaseContext(), ManualActivity.class);
+                    intent.putExtra("Activity", String.valueOf(spinner1.getSelectedItemId()));
+                    Log.d("Activity selected", String.valueOf(spinner1.getSelectedItemId()));
                     startActivity(intent);
                 }
                 else
                 {
-                    Log.d("Selected2", String.valueOf(spinner.getSelectedItem()));
                     Intent intent = new Intent(getActivity().getBaseContext(), MapActivity.class);
                     startActivity(intent);
                 }
