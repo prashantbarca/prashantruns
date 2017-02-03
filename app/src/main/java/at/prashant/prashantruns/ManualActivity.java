@@ -191,8 +191,8 @@ public class ManualActivity extends ListActivity implements AdapterView.OnItemCl
                 });
                 dialog2.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface d, int fd) {
-                        duration = Double.parseDouble(editText2.getText().toString());
-                        Log.d("Duration value set?", String.valueOf(duration));
+                        if(!editText2.getText().toString().equals(""))
+                            duration = Double.parseDouble(editText2.getText().toString());
                     }
                 });
                 dialog2.show();
