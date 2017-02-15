@@ -96,6 +96,7 @@ public class RunnerSQLHelper extends SQLiteOpenHelper
         e.setmClimb(cursor.getInt(9));
         e.setmHeartRate(cursor.getInt(10));
         e.setmComment(cursor.getString(11));
+        e.setLocationByte(cursor.getBlob(13));
         return e;
     }
 

@@ -2,6 +2,12 @@ package at.prashant.prashantruns;
 
 import android.icu.util.Calendar;
 
+import com.google.android.gms.maps.model.LatLng;
+
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
+import java.util.ArrayList;
+
 /**
  * Created by prashant on 2/1/17.
  */
@@ -22,12 +28,17 @@ public class ExerciseEntry {
     private float mClimb;         // Climb. Either in meters or feet.
     private int mHeartRate;       // Heart rate
     private String mComment;       // Comments
-   // private ArrayList<LatLng> mLocationList; // Location list
+    private ArrayList<LatLng> mLocationList; // Location list
 
 
     /*
      * Thanks to android studio for auto generating these.
      */
+
+    public ExerciseEntry()
+    {
+        mLocationList = new ArrayList<LatLng>();
+    }
 
     public Long getId(int position)
     {
@@ -62,12 +73,22 @@ public class ExerciseEntry {
         this.mClimb = mClimb;
     }
 
+    float getmClimb()
+    {
+        return mClimb;
+    }
+
     public void setmHeartRate(int mHeartRate) {
         this.mHeartRate = mHeartRate;
     }
 
     public void setmAvgSpeed(float mAvgSpeed) {
         this.mAvgSpeed = mAvgSpeed;
+    }
+
+    float getmAvgSpeed()
+    {
+        return mAvgSpeed;
     }
 
     public void setmCalorie(int calorie)
@@ -86,6 +107,41 @@ public class ExerciseEntry {
     public int getmHeartRate(){
         return mHeartRate;
     }
+
+    public byte[] getmLocationByte()
+    {
+        double[] coor = new double[mLocationList.size()*2];
+        int c = 0;
+        for(LatLng l: mLocationList)
+        {
+            coor[c] = l.latitude;
+            c++;
+            coor[c] = l.longitude;
+            c++;
+        }
+        ByteBuffer byteBuffer = ByteBuffer.allocate(coor.length*Double.SIZE);
+        DoubleBuffer buffer = byteBuffer.asDoubleBuffer();
+        buffer.put(coor);
+        return byteBuffer.array();
+    }
+
+    public void setLocationByte(byte[] bytesLocation)
+    {
+        if(bytesLocation.length == 0)
+            return;
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytesLocation);
+        DoubleBuffer doubleBuffer = byteBuffer.asDoubleBuffer();
+        double[] location = new double[bytesLocation.length / Double.SIZE];
+        doubleBuffer.get(location);
+
+        int coor = location.length/2;
+        for(int iter = 0; iter < coor; iter ++)
+        {
+            LatLng latLng = new LatLng(location[iter * 2], location[iter * 2 + 1]);
+            mLocationList.add(latLng);
+        }
+    }
+
 
     public String getmInputType()
     {
@@ -169,5 +225,15 @@ public class ExerciseEntry {
     public int getmDuration()
     {
         return mDuration;
+    }
+
+    public ArrayList<LatLng> getmLocationList()
+    {
+        return mLocationList;
+    }
+
+    public void addToList(LatLng a)
+    {
+        mLocationList.add(a);
     }
 }

@@ -64,10 +64,19 @@ public class HistoryFragment extends Fragment{
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Intent intent = new Intent(getActivity(), Display.class);
-                        intent.putExtra("POSITION", entry.get(position).getId(position));
-                        startActivity(intent);
-                    }
+                        String e = entry.get(position).getmInputType();
+                        if(e.equals("Manual Entry")) {
+                            Intent intent = new Intent(getActivity(), Display.class);
+                            intent.putExtra("POSITION", entry.get(position).getId(position));
+                            startActivity(intent);
+                        }
+                        else
+                        {
+                            Intent intent = new Intent(getActivity(), ExistingMapActivity.class);
+                            intent.putExtra("POSITION", entry.get(position).getId(position));
+                            startActivity(intent);
+                        }
+                        }
                 });
 
             }

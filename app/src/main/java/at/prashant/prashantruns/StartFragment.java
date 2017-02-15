@@ -40,6 +40,7 @@ public class StartFragment extends Fragment {
                 else
                 {
                     Intent intent = new Intent(getActivity().getBaseContext(), MapActivity.class);
+                    intent.putExtra("Activity", String.valueOf(spinner1.getSelectedItemId()));
                     startActivity(intent);
                 }
             }
