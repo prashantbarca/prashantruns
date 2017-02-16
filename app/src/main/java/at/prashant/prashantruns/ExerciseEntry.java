@@ -1,12 +1,15 @@
 package at.prashant.prashantruns;
 
 import android.icu.util.Calendar;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by prashant on 2/1/17.
@@ -30,14 +33,46 @@ public class ExerciseEntry {
     private String mComment;       // Comments
     private ArrayList<LatLng> mLocationList; // Location list
 
+    private Map<String, Integer> countActivities;
+
 
     /*
      * Thanks to android studio for auto generating these.
      */
 
+    public int getMaxActivity()
+    {
+        int max = 0;
+       int maxAct = 15;
+        if(countActivities.get("Standing") >= max)
+        {max = countActivities.get("Standing");
+             maxAct = 2;}
+        if(countActivities.get("Walking") >= max)
+        { max = countActivities.get("Walking");
+        maxAct = 1;}
+        if(countActivities.get("Running") >= max)
+        {
+            max = countActivities.get("Running");
+            maxAct = 0;
+        }
+        if (countActivities.get("Other") >= max)
+            maxAct = 15;
+        return maxAct;
+    }
+
+    void setCountActivities(String key)
+    {
+        countActivities.put(key, countActivities.get(key)+1);
+    }
+
     public ExerciseEntry()
     {
         mLocationList = new ArrayList<LatLng>();
+        countActivities = new HashMap<String, Integer>();
+        countActivities.put("Standing", 0);
+        countActivities.put("Running", 0);
+        countActivities.put("Walking", 0);
+        countActivities.put("Other", 0);
     }
 
     public Long getId(int position)
@@ -127,7 +162,7 @@ public class ExerciseEntry {
 
     public void setLocationByte(byte[] bytesLocation)
     {
-        if(bytesLocation.length == 0)
+        if(bytesLocation==null || bytesLocation.length == 0)
             return;
         ByteBuffer byteBuffer = ByteBuffer.wrap(bytesLocation);
         DoubleBuffer doubleBuffer = byteBuffer.asDoubleBuffer();
@@ -145,10 +180,12 @@ public class ExerciseEntry {
 
     public String getmInputType()
     {
-        if(mInputType == 1)
+        if(mInputType == 0)
             return "Manual Entry";
-        else
+        else if(mInputType == 1)
             return "Map Entry";
+        else
+            return "Automatic Entry";
     }
 
     public String getmActivityType()
@@ -194,6 +231,9 @@ public class ExerciseEntry {
                 break;
             case 12:
                 activity = "Elliptical";
+                break;
+            case 13:
+                activity = "Unknown";
                 break;
             default:
                 activity = "Other";

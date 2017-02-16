@@ -34,13 +34,16 @@ public class StartFragment extends Fragment {
                 {
                     Intent intent = new Intent(getActivity().getBaseContext(), ManualActivity.class);
                     intent.putExtra("Activity", String.valueOf(spinner1.getSelectedItemId()));
+                    Log.d("Put Type in bundle", String.valueOf(spinner.getSelectedItemId()));
                     Log.d("Activity selected", String.valueOf(spinner1.getSelectedItemId()));
                     startActivity(intent);
                 }
                 else
                 {
                     Intent intent = new Intent(getActivity().getBaseContext(), MapActivity.class);
-                    intent.putExtra("Activity", String.valueOf(spinner1.getSelectedItemId()));
+                    Log.d("Put Type in bundle", String.valueOf(spinner.getSelectedItemId()));
+                    intent.putExtra("Type", String.valueOf(spinner.getSelectedItemId()));
+                    intent.putExtra("Activity", "13");
                     startActivity(intent);
                 }
             }

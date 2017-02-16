@@ -43,7 +43,7 @@ public class ExistingMapActivity extends AppCompatActivity implements OnMapReady
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_existing_map);
         ActionBar bar = getSupportActionBar();
-        bar.setTitle("Prashant Runs 3");
+        bar.setTitle("Prashant Runs");
         Intent intent = getIntent();
         position = (Long) intent.getExtras().get("POSITION");
         entry = new ExerciseEntry();
@@ -129,7 +129,7 @@ public class ExistingMapActivity extends AppCompatActivity implements OnMapReady
         TextView v4 = (TextView) findViewById(R.id.climb);
         TextView v5 = (TextView) findViewById(R.id.calorie);
         TextView v6 = (TextView) findViewById(R.id.distance);
-        v1.setText("Type:" + entry.getmInputType());
+        v1.setText("Type:" + entry.getmActivityType());
         v2.setText("Avg speed: " + entry.getmAvgSpeed() + " " + speedUnit);
         v3.setText("Cur speed:" +" n/a");
         v4.setText("Climb: " + entry.getmClimb() + " " + distUnit);

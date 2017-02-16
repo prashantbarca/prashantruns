@@ -76,6 +76,7 @@ public class MapActivity extends FragmentActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         unit = isKm(getApplicationContext());
         if(savedInstanceState!=null)
         {
@@ -86,11 +87,17 @@ public class MapActivity extends FragmentActivity
             startTime = System.currentTimeMillis();
         }
         Intent i = getIntent();
-        type = i.getStringExtra("Activity");
-        Log.d("Map created", "Map created");
-        super.onCreate(savedInstanceState);
+        if(i.getStringExtra("Type").equals("1")) {
+            type = i.getStringExtra("Activity");
+        }
+        else
+        {
+            type = "13";
+        }
+        Log.d("Map created", type);
         setContentView(R.layout.activity_map);
         Intent serviceIntent = new Intent(this, TrackingService.class);
+        serviceIntent.putExtra("Type", i.getStringExtra("Type"));
         startService(serviceIntent);
         bindService(new Intent(this, TrackingService.class), this, Context.BIND_AUTO_CREATE);
         IntentFilter filter = new IntentFilter("Broadcast");
@@ -179,6 +186,7 @@ public class MapActivity extends FragmentActivity
             if(binding == true)
             {
                 drawPoints();
+                entry = trackingService.getExerciseEntry();
                 setAllTextViews(entry.getmActivityType(),
                  String.valueOf(entry.getmDistance()/((System.currentTimeMillis() - startTime)*3600)),
                  String.valueOf(trackingService.getCurspeed()) ,
@@ -203,8 +211,16 @@ public class MapActivity extends FragmentActivity
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
                 ContentValues values = new ContentValues();
                 Calendar calendar = Calendar.getInstance();
-                values.put(RunnerSQLHelper.columns[1],2); // This is for manual type
-                values.put(RunnerSQLHelper.columns[2],type);
+                if(entry.getmInputType().equals("Automatic Entry"))
+                {
+                    values.put(RunnerSQLHelper.columns[1],2);
+                    values.put(RunnerSQLHelper.columns[2], entry.getMaxActivity());
+                }
+                else
+                {
+                    values.put(RunnerSQLHelper.columns[1],1);
+                    values.put(RunnerSQLHelper.columns[2], entry.getmActivityType());
+                }
                 values.put(RunnerSQLHelper.columns[3], calendar.getTimeInMillis());
                 values.put(RunnerSQLHelper.columns[4], (System.currentTimeMillis() - startTime)/1000);
                 values.put(RunnerSQLHelper.columns[5], entry.getmDistance());
@@ -249,6 +265,7 @@ public class MapActivity extends FragmentActivity
         path = map.addPolyline(new PolylineOptions());
         Log.d("Draw points ","added");
         entry = trackingService.getExerciseEntry();
+        Log.d("Tracker service activ", entry.getmInputType());
         ArrayList<LatLng> list = entry.getmLocationList();
         if(list.size() == 1)
         {
