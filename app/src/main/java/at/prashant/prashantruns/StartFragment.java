@@ -10,6 +10,16 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.Toast;
+
+import com.google.api.client.testing.http.apache.MockHttpClient;
+
+import java.io.DataOutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+
+import at.prashant.prashantruns.sync.SyncData;
 
 /**
  * Created by prashant on 1/17/17.
@@ -23,6 +33,7 @@ public class StartFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_start,container, false);
         Button button_start = (Button) view.findViewById(R.id.button_start);
+        Button button_sync = (Button) view.findViewById(R.id.button_sync);
         final Spinner spinner = (Spinner) view.findViewById(R.id.input_spinner);
         final Spinner spinner1 = (Spinner) view.findViewById(R.id.activity_spinner);
         button_start.setOnClickListener(new View.OnClickListener()
@@ -49,6 +60,13 @@ public class StartFragment extends Fragment {
             }
         }
         );
+        button_sync.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SyncData syncData = new SyncData(getContext());
+                syncData.sync();
+            }
+        });
         return view;
     }
 }

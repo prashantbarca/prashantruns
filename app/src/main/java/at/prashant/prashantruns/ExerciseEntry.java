@@ -5,6 +5,8 @@ import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONObject;
+
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.util.ArrayList;
@@ -275,5 +277,28 @@ public class ExerciseEntry {
     public void addToList(LatLng a)
     {
         mLocationList.add(a);
+    }
+
+    public JSONObject getObject()
+    {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("id", id);
+            jsonObject.put("inputType", mInputType);
+            jsonObject.put("activityType", mActivityType);
+            jsonObject.put("dateTime", mDateTime.getTimeInMillis());
+            jsonObject.put("duration", mDuration);
+            jsonObject.put("distance", mDistance);
+            jsonObject.put("avgSpeed", mAvgSpeed);
+            jsonObject.put("calorie", mCalorie);
+            jsonObject.put("climb", mClimb);
+            jsonObject.put("heartrate", mHeartRate);
+            jsonObject.put("comment", mComment);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return jsonObject;
     }
 }

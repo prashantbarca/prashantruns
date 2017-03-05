@@ -218,9 +218,31 @@ public class TrackingService extends Service implements SensorEventListener {
     }
 
     private class OnSensorChangedTask extends AsyncTask<Void, Void, Void> {
+
+        int classify(int classi)
+        {
+            switch (classi) {
+            case 0:
+                return 0;
+            case 1:
+                return 2;
+            case 2:
+                return 1;
+                default:
+                    return 14;
+         }
+
+        }
+
         @Override
         protected Void doInBackground(Void... arg0) {
 
+            /*
+             * Compute FFT of the last 64 sensor values,
+             * Give as input to the WekaClassifier.classify method.
+             * It would set the value of the activity to Standing, Walking, Running or Others.
+             * We keep track of the number of each of the occurences with the help of a HashMap
+             */
             ArrayList<Double> featureVector = new ArrayList<Double>(
                    64 + 1);
             int blockSize = 0;
@@ -239,46 +261,43 @@ public class TrackingService extends Service implements SensorEventListener {
                         return null;
                     }
                     block[blockSize++] = buffer.take().doubleValue();
-
                     if (blockSize == 64) {
                         blockSize = 0;
                         max = .0;
-                        for (double val : block) {
+                        for (double val : block)
+                        {
                             if (max < val) {
                                 max = val;
                             }
                         }
-
                         fft.fft(fftre, fftim);
-
                         for (int i = 0; i < fftre.length; i++) {
                             double mag = Math.sqrt(fftre[i] * fftre[i] + fftim[i]
                                     * fftim[i]);
                             featureVector.add(Double.valueOf(mag));
                             fftim[i] = .0;
                         }
-
+                        /*
+                         * max stores the minimum double value
+                         */
                         featureVector.add(Double.valueOf(max));
-                        int classifiedValue = (int) WekaClassifier
-                                .classify(featureVector.toArray());
+                        /*
+                         * Call the WekaClassifier class now.
+                         */
+                        int cValue = (int) WekaClassifier.classify(featureVector.toArray());
                         int activityId = 14;
-                        switch (classifiedValue) {
-                            case 0:
-                                activityId = 0;
-                                break;
-                            case 1:
-                                activityId = 2;
-                                break;
-                            case 2:
-                                activityId = 1;
-                                break;
-                        }
+                        /*
+                         * 14 is the value for others.
+                         */
+                        activityId = classify(cValue);
                         featureVector.clear();
                         Log.d("Activity", String.valueOf(activityId));
                         exerciseEntry.setmActivityType(activityId);
                         exerciseEntry.setCountActivities(exerciseEntry.getmActivityType());
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     e.printStackTrace();
                 }
             }

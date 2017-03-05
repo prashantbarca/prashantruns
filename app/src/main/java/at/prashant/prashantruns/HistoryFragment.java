@@ -20,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TabHost;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ import java.util.List;
  *  MAP API KEY AIzaSyDgWEaSH9m_MFVGepJUDj6IWsuxebpAydw
  */
 
-public class HistoryFragment extends Fragment{
+public class HistoryFragment extends Fragment implements TabHost.OnTabChangeListener{
 
     ArrayList<HistoryFragmentItems> currentEntries = null;
     MyCursorAdapter adapter;
@@ -148,5 +149,10 @@ public class HistoryFragment extends Fragment{
             return true;
         else
             return false;
+    }
+
+    @Override
+    public void onTabChanged(String tabId) {
+        r.run();
     }
 }

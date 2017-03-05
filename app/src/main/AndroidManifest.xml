@@ -4,6 +4,7 @@
 
     <uses-feature android:name="android.hardware.camera" />
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -12,6 +13,15 @@
 
     <!-- To access Google+ APIs: -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+
+    <permission
+        android:name="com.example.gcm.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="com.example.gcm.permission.C2D_MESSAGE" />
 
     <application
         android:allowBackup="true"
@@ -19,7 +29,10 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyDgWEaSH9m_MFVGepJUDj6IWsuxebpAydw"/>
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDgWEaSH9m_MFVGepJUDj6IWsuxebpAydw" />
+
         <activity android:name="com.soundcloud.android.crop.CropImageActivity" />
         <activity
             android:name=".MainActivity"
@@ -46,6 +59,31 @@
         <activity
             android:name=".Display"
             android:windowSoftInputMode="stateAlwaysHidden" />
+
+        <service
+            android:name=".TrackingService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity
+            android:name=".ExistingMapActivity"
+            android:label="@string/title_activity_existing_map" />
+
+        <receiver
+            android:name=".sync.GcmBroadcastReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
+                <category android:name="edu.dartmouth.cs.gcmdemo" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".sync.GcmIntentService"
+            android:enabled="true"
+            android:exported="true" />
+
     </application>
 
 </manifest>
